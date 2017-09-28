@@ -29,7 +29,7 @@ public class Driver {
 		// how to customize separator?
 		// Define the job to read data by sentence
 		conf1.set("textinputformat.record.delimiter", ".");	// built-in parameter
-		conf1.set("noGram", args[2]);						// custom parameter
+		conf1.set("noGram", numberOfNGram);						// custom parameter
 
 		Job job1 = Job.getInstance(conf1);
 		job1.setJobName("NGram");
@@ -44,8 +44,8 @@ public class Driver {
 		job1.setInputFormatClass(TextInputFormat.class);
 		job1.setOutputFormatClass(TextOutputFormat.class);
 		
-		TextInputFormat.setInputPaths(job1, new Path(args[0]));
-		TextOutputFormat.setOutputPath(job1, new Path(args[1]));
+		TextInputFormat.setInputPaths(job1, new Path(inputDir));
+		TextOutputFormat.setOutputPath(job1, new Path(nGramLib));
 		job1.waitForCompletion(true);
 		
 		// how to connect two jobs?
@@ -53,8 +53,8 @@ public class Driver {
 		
 		// 2nd job
 		Configuration conf2 = new Configuration();
-		conf2.set("threshold", args[3]);
-		conf2.set("n", args[4]);
+		conf2.set("threshold", threshold);
+		conf2.set("n", numberOfFollowingWords);
 		
 		DBConfiguration.configureDB(conf2, 
 				"com.mysql.jdbc.Driver",
