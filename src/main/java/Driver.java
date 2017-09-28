@@ -44,7 +44,7 @@ public class Driver {
 		
 		//2nd job
 		Configuration conf2 = new Configuration();
-		conf2.set("threashold", args[3]);
+		conf2.set("threshold", args[3]);
 		conf2.set("n", args[4]);
 		
 		DBConfiguration.configureDB(conf2, 

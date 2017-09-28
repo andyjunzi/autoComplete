@@ -46,7 +46,10 @@ public class NGramLibraryBuilder {
 				for (int j = 1; i + j < words.length && j < noGram; j++) {
 					sb.append(" ");
 					sb.append(words[i + j]);
-					context.write(new Text(sb.toString().trim()), new IntWritable(1));
+					String outputKey = sb.toString().trim();
+					if (outputKey != null && outputKey.length() >= 1) {
+						context.write(new Text(outputKey), new IntWritable(1));
+					}
 				}
 			}
 		}
