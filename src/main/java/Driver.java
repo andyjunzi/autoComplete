@@ -15,13 +15,22 @@ import java.io.IOException;
 public class Driver {
 
 	public static void main(String[] args) throws ClassNotFoundException, IOException, InterruptedException {
-		//job1
+
+		String inputDir = args[0];
+		String nGramLib = args[1];
+		String numberOfNGram = args[2];
+		// the word with frequency under threshold will be discarded
+		String threshold = args[3];
+		String numberOfFollowingWords = args[4];
+
+		// job1
 		Configuration conf1 = new Configuration();
 
-		//how to customize separator?
+		// how to customize separator?
+		// Define the job to read data by sentence
+		conf1.set("textinputformat.record.delimiter", ".");	// built-in parameter
+		conf1.set("noGram", args[2]);						// custom parameter
 
-		conf1.set("noGram", args[2]);
-		
 		Job job1 = Job.getInstance(conf1);
 		job1.setJobName("NGram");
 		job1.setJarByClass(Driver.class);
@@ -39,38 +48,46 @@ public class Driver {
 		TextOutputFormat.setOutputPath(job1, new Path(args[1]));
 		job1.waitForCompletion(true);
 		
-		//how to connect two jobs?
+		// how to connect two jobs?
 		// last output is second input
 		
-		//2nd job
+		// 2nd job
 		Configuration conf2 = new Configuration();
 		conf2.set("threshold", args[3]);
 		conf2.set("n", args[4]);
 		
 		DBConfiguration.configureDB(conf2, 
 				"com.mysql.jdbc.Driver",
-				"jdbc:mysql://ip_address:port/test",
+				"jdbc:mysql://98.31.47.173:8889/test",
 				"root",
-				"password");
+				"root");
 		
 		Job job2 = Job.getInstance(conf2);
 		job2.setJobName("Model");
 		job2.setJarByClass(Driver.class);
-		
-		job2.addArchiveToClassPath(new Path("path_to_ur_connector"));
+
+		// How to add external dependency to current project?
+        /*
+		  1. upload dependency to hdfs
+		  2. use this "addArchiveToClassPath" method to define the dependency path on hdfs
+		 */
+		job2.addArchiveToClassPath(new Path("/mysql/mysql-connector-java-5.1.39-bin.jar"));
+
+		job2.setMapperClass(LanguageModel.Map.class);
+		job2.setReducerClass(LanguageModel.Reduce.class);
+
+		// Why do we add both map outputKey and outputValue?
+		// Because map output key and value are inconsistent with reducer output key and value
 		job2.setMapOutputKeyClass(Text.class);
 		job2.setMapOutputValueClass(Text.class);
 		job2.setOutputKeyClass(DBOutputWritable.class);
 		job2.setOutputValueClass(NullWritable.class);
 		
-		job2.setMapperClass(LanguageModel.Map.class);
-		job2.setReducerClass(LanguageModel.Reduce.class);
-		
 		job2.setInputFormatClass(TextInputFormat.class);
 		job2.setOutputFormatClass(DBOutputFormat.class);
-		
-		DBOutputFormat.setOutput(job2, "output", 
-				new String[] {"starting_phrase", "following_word", "count"});
+
+		// use DBOutputformat to define the table name and columns
+		DBOutputFormat.setOutput(job2, "output", new String[] {"starting_phrase", "following_word", "count"});
 
 		TextInputFormat.setInputPaths(job2, args[1]);
 		job2.waitForCompletion(true);
