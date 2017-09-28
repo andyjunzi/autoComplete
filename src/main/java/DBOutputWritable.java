@@ -4,28 +4,30 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class DBOutputWritable implements DBWritable{
+public class DBOutputWritable implements DBWritable {
 
-	private String starting_phrase;
-	private String following_word;
-	private int count;
-	
-	public DBOutputWritable(String starting_prhase, String following_word, int count) {
-		this.starting_phrase = starting_prhase;
-		this.following_word = following_word;
-		this.count= count;
-	}
+    private String starting_phrase;
+    private String following_word;
+    private int count;
 
-	public void readFields(ResultSet arg0) throws SQLException {
+    public DBOutputWritable(String starting_prhase, String following_word, int count) {
+        this.starting_phrase = starting_prhase;
+        this.following_word = following_word;
+        this.count = count;
+    }
 
-		//how to read fields?
-		
-	}
+    public void readFields(ResultSet arg0) throws SQLException {
+        // how to read fields?
+        this.starting_phrase = arg0.getString(1);
+        this.following_word = arg0.getString(2);
+        this.count = arg0.getInt(3);
+    }
 
-	public void write(PreparedStatement arg0) throws SQLException {
-
-		//how to write fields?
-		
-	}
-
+    public void write(PreparedStatement arg0) throws SQLException {
+        // how to write fields?
+        // mapReduce's index start from 1
+        arg0.setString(1, starting_phrase);
+        arg0.setString(2, following_word);
+        arg0.setInt(3, count);
+    }
 }
